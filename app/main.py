@@ -1,12 +1,13 @@
 import uuid
 from datetime import datetime
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
 
 from app.database import engine, Base, get_db, SessionLocal
 from app.models import Producto as ProductoModel
+from app import schemas
+from app.services import productos as productos_service
 
 # Crear las tablas en la base de datos si no existen
 Base.metadata.create_all(bind=engine)
@@ -41,19 +42,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- ESQUEMAS PYDANTIC (Validación HTTP) ---
+# --- ESQUEMAS PYDANTIC (en app/schemas.py) ---
 
-class ProductoSchema(BaseModel):
-    id: int | None = None
-    nombre: str
-    precio_final: float
-    cuotas_cantidad: int
-    cuotas_valor: float
-    garantia_meses: int
-    stock: int
-
-    class Config:
-        from_attributes = True
+from pydantic import BaseModel
 
 class SolicitudArrepentimiento(BaseModel):
     email: str
@@ -63,19 +54,21 @@ class SolicitudArrepentimiento(BaseModel):
 # Base de datos en memoria para arrepentimientos (por ahora)
 arrepentimientos_db = []
 
-# --- ENDPOINTS DE PRODUCTOS (Conectados a PostgreSQL) ---
+# --- ENDPOINTS DE PRODUCTOS ---
 
-@app.get("/productos", response_model=list[ProductoSchema])
-def obtener_productos(db: Session = Depends(get_db)):
-    return db.query(ProductoModel).all()
+@app.get("/productos", response_model=list[schemas.ProductoOut])
+def obtener_productos(
+    skip: int = Query(default=0, ge=0, description="Registros a saltar (offset)"),
+    limit: int = Query(default=100, ge=1, le=500, description="Maximo de resultados"),
+    nombre: str | None = Query(default=None, description="Filtrar por nombre parcial (case-insensitive)"),
+    precio_max: float | None = Query(default=None, ge=0, description="Precio maximo inclusive"),
+    db: Session = Depends(get_db),
+):
+    return productos_service.listar_productos(db, skip=skip, limit=limit, nombre=nombre, precio_max=precio_max)
 
-@app.post("/productos", response_model=ProductoSchema)
-def crear_producto(producto: ProductoSchema, db: Session = Depends(get_db)):
-    nuevo_producto = ProductoModel(**producto.model_dump(exclude={"id"}))
-    db.add(nuevo_producto)
-    db.commit()
-    db.refresh(nuevo_producto)
-    return nuevo_producto
+@app.post("/productos", response_model=schemas.ProductoOut, status_code=201)
+def crear_producto(producto: schemas.ProductoCreate, db: Session = Depends(get_db)):
+    return productos_service.crear_producto(db, producto)
 
 # --- ENDPOINT DE ARREPENTIMIENTO (Resolución 424/2020) ---
 
