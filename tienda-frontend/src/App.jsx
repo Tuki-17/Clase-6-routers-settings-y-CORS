@@ -145,7 +145,7 @@ export default function App() {
       <header className="app-header">
         <div className="brand-section">
           <h1 className="brand-title">🍰 Trampantojos Boutique</h1>
-          <span className="brand-subtitle">Pastelería de ilusión óptica e información transparente (Ley 24.240)</span>
+          <span className="brand-subtitle">Pastelería de ilusión óptica · Información transparente (Ley 24.240)</span>
         </div>
         <div className="nav-actions">
           <button 
@@ -153,31 +153,44 @@ export default function App() {
             onClick={() => setIsArrepentimientoOpen(true)}
             title="Botón de Arrepentimiento - Resolución 424/2020"
           >
-            ↩️ Botón de Arrepentimiento
+            ↩️ Arrepentimiento
           </button>
           
           <button className="btn btn-secondary" onClick={() => setIsCartOpen(true)}>
-            🛒 Ver Carrito {cart.length > 0 && `(${cart.reduce((s, i) => s + i.cantidad, 0)})`}
+            🛒 Carrito
+            {cart.length > 0 && (
+              <span className="cart-badge">
+                {cart.reduce((s, i) => s + i.cantidad, 0)}
+              </span>
+            )}
           </button>
         </div>
       </header>
 
-      {/* Banner de información de cumplimiento legal (Ley 24.240 Art. 4) */}
+      {/* Banner Legal */}
       <section className="info-banner">
-        <h3>ℹ️ Información de Transparencia Comercial (Ley de Defensa del Consumidor)</h3>
+        <h3>ℹ️ Transparencia Comercial (Ley 24.240)</h3>
         <p>
-          De conformidad con el <strong>Art. 4 de la Ley 24.240</strong>, se informa que todos los precios exhibidos son precios finales de contado en pesos argentinos (ARS). 
-          Las cuotas ofrecidas son sin interés (<strong>CFT: 0,00%, TNA: 0,00%, TEA: 0,00%</strong>). Al tratarse de alimentos frescos de pastelería, no poseen garantía comercial extendida. 
-          Usted tiene derecho a revocar la compra dentro de los 10 días corridos de realizada utilizando el botón de arrepentimiento.
+          De conformidad con el <strong>Art. 4 de la Ley 24.240</strong>, todos los precios son finales en ARS.
+          Cuotas sin interés (<strong>CFT: 0,00%, TNA: 0,00%, TEA: 0,00%</strong>).
+          Tenés derecho a revocar la compra dentro de los 10 días corridos usando el Botón de Arrepentimiento.
         </p>
       </section>
 
-      {/* Catálogo de Productos */}
+      {/* Catálogo */}
       <main style={{ flexGrow: 1 }}>
-        <h2 style={{ marginBottom: '24px', textAlign: 'left', fontSize: '24px' }}>Nuestras Creaciones Dulces</h2>
+        <div className="catalogo-header">
+          <h2 className="catalogo-title">🍭 Nuestras Creaciones Dulces</h2>
+          <div className="vibe-tags">
+            <span className="badge-pill badge-lime">🍬 Sweet AF</span>
+            <span className="badge-pill badge-pink">✨ Shine On</span>
+            <span className="badge-pill badge-cyan">🌀 Vibe Check</span>
+            <span className="badge-pill badge-yellow">⚡ Power Up</span>
+          </div>
+        </div>
         
-        {loading && <p style={{ color: 'var(--text-secondary)' }}>Cargando catálogo de delicias...</p>}
-        {error && <p style={{ color: 'var(--danger)', padding: '10px', background: 'var(--danger-light)', borderRadius: '8px' }}>Error: {error}</p>}
+        {loading && <p className="loading-text">Cargando catálogo de delicias... 🍰</p>}
+        {error && <div className="error-box">⚠️ Error: {error}</div>}
         
         {!loading && !error && (
           <div className="product-grid">

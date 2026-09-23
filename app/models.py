@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, Float, ForeignKey
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -8,10 +8,13 @@ class Usuario(Base):
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
-    password_hash = Column(String, nullable=False)
-    rol = Column(String, default="cliente")
+    hashed_password = Column(String, nullable=False)
+    rol = Column(String, default="customer")
+    acepto_tratamiento = Column(Boolean, nullable=False, default=False)
+    fecha_consentimiento = Column(DateTime, nullable=True)
 
     pedidos = relationship("Pedido", back_populates="usuario")
+
 
 class Producto(Base):
     __tablename__ = "productos"
